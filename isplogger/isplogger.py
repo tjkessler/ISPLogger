@@ -136,7 +136,8 @@ class ISPLogger:
             )
             return True
         except Exception as e:
-            LOGGER.log(10, 'Exception: {}'.format(e))
+            LOGGER.log(10, 'Exception: {}'.format(e),
+                       extra={'host_port': '{}:{}'.format(host, port)})
             return False
 
     @staticmethod
