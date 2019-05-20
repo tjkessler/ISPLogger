@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # isplogger/logger.py
-# v.0.1.0
+# v.0.2.1
 # Developed in 2019 by Travis Kessler <travis.j.kessler@gmail.com>
 #
 # Console/text file logging
