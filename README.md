@@ -7,8 +7,8 @@
 ISPLogger is an open source Python tool for monitoring/logging the availability of an internet connection for a given device. ISPLogger supports text/CSV logging, variable time windows for host pinging and timeouts, and command line/terminal executable functionality.
 
 Future plans for ISPLogger include:
-    -   Graph generation to display downtime
-    -   A full graphical user interface
+ - Graph generation to display downtime
+ - A full graphical user interface
 
 # Installation
 
