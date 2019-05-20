@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # isplogger/isplogger.py
-# v.0.2.0
+# v.0.2.1
 # Developed in 2019 by Travis Kessler <travis.j.kessler@gmail.com>
 #
 # Houses ISPLogger object, querying specified server for internet access

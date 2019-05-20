@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='isplogger',
-    version='0.2.0',
+    version='0.2.1',
     description='A tool for monitoring/recording internet access',
     url='http://github.com/tjkessler/isplogger',
     author='Travis Kessler',
