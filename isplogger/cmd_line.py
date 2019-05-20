@@ -2,34 +2,29 @@
 # -*- coding: utf-8 -*-
 #
 # isplogger/cmd_line.py
-# v.0.1.0
+# v.0.2.0
 # Developed in 2019 by Travis Kessler <travis.j.kessler@gmail.com>
 #
 # Command line tool for running isplogger: run as `isp-logger`
 #
 
+# stdlib imports
 from argparse import ArgumentParser
 from sys import argv
 
+# ISPLogger imports
 from isplogger import ISPLogger
-from isplogger import LOGGER, add_file_handler
+from isplogger import LOGGER, add_file_handler, FILE_FORMAT
 
 
 def main():
 
     ap = ArgumentParser()
     ap.add_argument(
-        '--to_csv',
-        type=str,
-        default='False',
-        help='`True` to save status to CSV file; `False` by default'
-    )
-    ap.add_argument(
         '--csv_filename',
         type=str,
-        default='./down_time.csv',
-        help='If saving to CSV, specify the CSV\'s file location; '
-             'default is `./down_time.csv`'
+        default=None,
+        help='If saving to CSV, specify the CSV\'s file location'
     )
     ap.add_argument(
         '--snapshot_interval',
@@ -57,6 +52,12 @@ def main():
              'to save them in'
     )
     ap.add_argument(
+        '--log_filename',
+        type=str,
+        default=FILE_FORMAT,
+        help='Name of text log file, if saving to file'
+    )
+    ap.add_argument(
         '--host',
         type=str,
         default='8.8.8.8',
@@ -75,15 +76,10 @@ def main():
         help='Timeout, in seconds, of network pings; defaults to 3'
     )
     args = vars(ap.parse_args(argv[1:]))
-    if args['to_csv'].lower() == 'true':
-        to_csv = True
-    elif args['to_csv'].lower() == 'false':
-        to_csv = False
-    else:
-        raise ValueError('Unknown to_csv argument: {}'.format(args['to_csv']))
-    ispl = ISPLogger(to_csv, args['csv_filename'])
+    ispl = ISPLogger(args['csv_filename'])
     LOGGER.setLevel(args['log_level'])
     if args['log_dir'] is not None:
-        add_file_handler(log_dir=args['log_dir'])
+        add_file_handler(LOGGER, log_dir=args['log_dir'],
+                         filename=args['log_filename'])
     ispl.run(args['snapshot_interval'], args['iterations'], args['host'],
              args['port'], args['timeout'])

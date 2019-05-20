@@ -2,46 +2,46 @@
 # -*- coding: utf-8 -*-
 #
 # isplogger/isplogger.py
-# v.0.1.0
+# v.0.2.0
 # Developed in 2019 by Travis Kessler <travis.j.kessler@gmail.com>
 #
 # Houses ISPLogger object, querying specified server for internet access
 #
 
+# stdlib imports
 from csv import DictWriter
 import time
 import socket
 import datetime
 import os
 
+# ISPLogger imports
 from isplogger.logger import LOGGER
 
 
 class ISPLogger:
 
-    def __init__(self, to_csv: bool=False,
-                 csv_filename: str='./down_time.csv'):
+    def __init__(self, csv_filename: str=None):
         '''ISPLogger: pings a specified server to determine if internet is
         currently available
 
         Args:
-            to_csv (bool): if True, logs all data to a CSV file; defaults to
-                False
-            csv_filename (str): if `to_csv` is True, saves to this file;
-                defaults to `./down_time.csv`
+            csv_filename (str): if not None, saves network information to this
+                CSV file
         '''
 
-        if to_csv:
+        if csv_filename is not None:
             if not os.path.exists(csv_filename):
                 with open(csv_filename, 'w') as csv_file:
                     writer = DictWriter(csv_file, [
-                        'Year', 'Month', 'Day', 'Hour',
-                        'Minute', 'Second', 'Status'
+                        'Date', 'Time', 'Host', 'Port', 'Status'
                     ], delimiter=',', lineterminator='\n')
                     writer.writeheader()
                 csv_file.close()
-        self._to_csv = to_csv
-        self._csv_filename = csv_filename
+            self._to_csv = True
+            self._csv_filename = csv_filename
+        else:
+            self._to_csv = False
         return
 
     def run(self, snapshot_interval: int=10, iterations: int=-1,
@@ -66,43 +66,52 @@ class ISPLogger:
         if iterations > 0:
             for _ in range(iterations):
                 t_start = time.time()
-                self._log(self.ping(host, port, timeout))
+                self.log(
+                    self.ping(host, port, timeout),
+                    host,
+                    port
+                )
                 t_end = time.time()
-                time.sleep(snapshot_interval - (t_start - t_end))
+                time.sleep(snapshot_interval - (t_end - t_start))
         else:
             while True:
                 t_start = time.time()
-                self._log(self.ping(host, port, timeout))
+                self.log(
+                    self.ping(host, port, timeout),
+                    host,
+                    port
+                )
                 t_end = time.time()
-                time.sleep(snapshot_interval - (t_start - t_end))
+                time.sleep(snapshot_interval - (t_end - t_start))
         return
 
-    def _log(self, is_up: bool):
-        '''_log: handles console/file logging, CSV saving
+    def log(self, is_up: bool, host: str, port: int):
+        '''log: handles console/file logging, CSV saving
 
         Args:
             is_up (bool): True if internet is accessable, False otherwise
+            host (str): host of attempted connection
+            port (int): port of attempted connection
         '''
 
         if not is_up:
-            LOGGER.log(30, 'DOWN')
+            LOGGER.log(30, 'DOWN',
+                       extra={'host_port': '{}:{}'.format(host, port)})
         else:
-            LOGGER.log(20, 'UP')
+            LOGGER.log(20, 'UP',
+                       extra={'host_port': '{}:{}'.format(host, port)})
         if self._to_csv:
             time_data = self._timestamp()
             status = 1 if is_up else 0
             with open(self._csv_filename, 'a') as csv_file:
                 writer = DictWriter(csv_file, [
-                    'Year', 'Month', 'Day', 'Hour',
-                    'Minute', 'Second', 'Status'
+                    'Date', 'Time', 'Host', 'Port', 'Status'
                 ], delimiter=',', lineterminator='\n')
                 writer.writerow({
-                    'Year': time_data[0],
-                    'Month': time_data[1],
-                    'Day': time_data[2],
-                    'Hour': time_data[3],
-                    'Minute': time_data[4],
-                    'Second': time_data[5],
+                    'Date': time_data[0],
+                    'Time': time_data[1],
+                    'Host': host,
+                    'Port': port,
                     'Status': status
                 })
         return
@@ -139,4 +148,6 @@ class ISPLogger:
         '''
 
         now = datetime.datetime.now()
-        return (now.year, now.month, now.day, now.hour, now.minute, now.second)
+        date = now.strftime('%Y-%m-%d')
+        time = now.strftime('%H:%M:%S')
+        return (date, time)
